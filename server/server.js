@@ -8,19 +8,18 @@ const eventRoutes = require('./routes/eventRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const lostFoundRoutes = require('./routes/lostFoundRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const authRoutes = require('./routes/authRoutes');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env'), override: true });
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-if (process.env.MONGO_URI) {
-  connectDB();
-}
-
 app.use('/api/clubs', clubRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/lost-found', lostFoundRoutes);
 app.use('/api/profile', profileRoutes);
@@ -36,7 +35,16 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Campus Connect server listening on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Campus Connect server listening on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

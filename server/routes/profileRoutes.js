@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { profile } = require('../data/mockData');
+const { authenticate } = require('../middleware/authMiddleware');
 
-router.get('/', (req, res) => {
-  res.json(profile);
+router.get('/', authenticate, async (req, res) => {
+  const { name, email, role, studentId, department, bio, completion, achievements, status } = req.user;
+  res.json({ name, email, role, studentId, department, bio, completion, achievements, status });
 });
 
 module.exports = router;

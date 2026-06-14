@@ -1,17 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { lostItems } = require('../data/mockData');
+const LostItem = require('../models/LostItem');
+const { authenticate } = require('../middleware/authMiddleware');
 
-router.get('/', (req, res) => {
+router.get('/', authenticate, async (req, res) => {
+  const lostItems = await LostItem.find().lean();
   res.json(lostItems);
 });
 
-router.post('/', (req, res) => {
+router.post('/', authenticate, async (req, res) => {
   const { title, location, description } = req.body;
   if (!title || !location) {
     return res.status(400).json({ message: 'Title and location are required.' });
   }
-  res.status(201).json({ message: 'Lost item report submitted.', title, location, description });
+
+  const item = await LostItem.create({
+    id: `lost-${Date.now()}`,
+    title,
+    location,
+    description: description || '',
+    status: 'Pending Verification'
+  });
+
+  res.status(201).json({ message: 'Lost item report submitted.', item });
 });
 
 module.exports = router;
