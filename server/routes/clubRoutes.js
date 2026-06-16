@@ -30,7 +30,21 @@ router.post('/join', authenticate, async (req, res) => {
     return res.status(404).json({ message: 'Club not found.' });
   }
 
-  const joinRequest = await JoinRequest.create({ clubId, phone, trxId, role, paymentMethod });
+  const destination = ['Moderator', 'Admin'].includes(role) ? 'superadmin' : 'club';
+
+  const joinRequest = await JoinRequest.create({
+    clubId,
+    userId: req.user._id.toString(),
+    userName: req.user.name,
+    userEmail: req.user.email,
+    phone,
+    trxId,
+    role,
+    paymentMethod,
+    destination,
+    status: 'pending'
+  });
+
   res.status(201).json({ message: 'Club join request submitted.', joinRequest });
 });
 
